@@ -1,15 +1,36 @@
 import { readFileSync, statSync } from "node:fs";
 
+export type McpMode = "analyse" | "full";
+
 export interface Config {
   url: string;
   user: string;
   token?: string;
   password?: string;
+  mode: McpMode;
   readonly: boolean;
   allowHttp: boolean;
 }
 
 export function loadConfig(): Config {
+  const args = process.argv.slice(2);
+  let modeFromArgs: McpMode | undefined;
+
+  for (const arg of args) {
+    if (
+      arg === "--analyse" ||
+      arg === "--analyze" ||
+      arg === "--mode=analyse" ||
+      arg === "--mode=analyze" ||
+      arg === "--readonly"
+    ) {
+      modeFromArgs = "analyse";
+    } else if (arg === "--full" || arg === "--mode=full" || arg === "--write") {
+      modeFromArgs = "full";
+    }
+  }
+
+  const envMode = (process.env.MCP_MODE || process.env.MCP_SERVER_MODE)?.toLowerCase();
   const url = process.env.TECHNITIUM_URL;
   if (!url) {
     throw new Error(
@@ -19,6 +40,17 @@ export function loadConfig(): Config {
 
   const cleanUrl = url.replace(/\/$/, "");
   const allowHttp = process.env.TECHNITIUM_ALLOW_HTTP === "true";
+  let mode: McpMode = process.env.TECHNITIUM_READONLY === "true" ? "analyse" : "full";
+
+  if (envMode === "analyse" || envMode === "analyze") {
+    mode = "analyse";
+  } else if (envMode === "full") {
+    mode = "full";
+  }
+
+  if (modeFromArgs) {
+    mode = modeFromArgs;
+  }
 
   if (cleanUrl.startsWith("http://") && !allowHttp) {
     throw new Error(
@@ -53,7 +85,7 @@ export function loadConfig(): Config {
 
   const password = process.env.TECHNITIUM_PASSWORD;
   const user = process.env.TECHNITIUM_USER || "admin";
-  const readonly = process.env.TECHNITIUM_READONLY === "true";
+  const readonly = mode === "analyse";
 
   if (!token && !password) {
     throw new Error(
@@ -66,5 +98,5 @@ export function loadConfig(): Config {
   delete process.env.TECHNITIUM_TOKEN_FILE;
   delete process.env.TECHNITIUM_PASSWORD;
 
-  return { url: cleanUrl, user, token, password, readonly, allowHttp };
+  return { url: cleanUrl, user, token, password, mode, readonly, allowHttp };
 }

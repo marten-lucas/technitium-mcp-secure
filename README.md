@@ -6,7 +6,7 @@ Built for use with [Claude Code](https://docs.anthropic.com/en/docs/claude-code)
 
 ## Features
 
-- **39 tools** covering DNS zones, records, blocking, cache, settings, apps, DNSSEC, logs, and diagnostics
+- **58 tools** covering DNS zones, records, blocking, cache, settings, apps, DNSSEC, logs, diagnostics, and admin/user management
 - **Input validation** on all parameters (RFC 1035 domain checks, IP validation, enum allowlists)
 - **HTTPS enforcement** with explicit HTTP opt-in for local networks
 - **Read-only mode** to expose only safe query tools
@@ -53,9 +53,14 @@ Authentication priority: `TECHNITIUM_TOKEN` > `TECHNITIUM_TOKEN_FILE` > `TECHNIT
 
 Sensitive environment variables are cleared from `process.env` after being read.
 
+CLI mode flags are also supported:
+
+- `--analyse` / `--analyze` / `--mode=analyse` / `--mode=analyze` / `--readonly`
+- `--full` / `--mode=full` / `--write`
+
 ## Tools
 
-### Read-only (18 tools)
+### Read-only (27 tools)
 
 | Tool | Description |
 |------|-------------|
@@ -77,8 +82,17 @@ Sensitive environment variables are cleared from `process.env` after being read.
 | `dns_get_app_config` | Get configuration for an installed app |
 | `dns_dnssec_info` | DNSSEC properties for a zone |
 | `dns_get_ds` | DS records for a DNSSEC-signed zone |
+| `list_admin_sessions` | List active sessions and API tokens |
+| `list_users` | List registered users |
+| `get_user_details` | Get a user's profile details and permissions |
+| `list_groups` | List user groups |
+| `get_cluster_state` | Get cluster status and secondary node info |
+| `get_user_status` | Current user status and server version |
+| `get_session_info` | Current active session details |
+| `get_profile_details` | Authenticated user profile details |
+| `check_for_update` | Check if a new Technitium version is available |
 
-### Write (21 tools)
+### Write (31 tools)
 
 | Tool | Description |
 |------|-------------|
@@ -103,6 +117,16 @@ Sensitive environment variables are cleared from `process.env` after being read.
 | `dns_temp_disable_blocking` | Temporarily disable blocking (auto re-enables) |
 | `dns_install_app` | Install a DNS app from the app store |
 | `dns_uninstall_app` | Uninstall an app (requires `confirm: true`) |
+| `create_admin_api_token` | Create a persistent API token for a user |
+| `delete_admin_session` | Delete/terminate a user session or token |
+| `create_user` | Create a new user account |
+| `delete_user` | Delete a user account |
+| `create_group` | Create a new user group |
+| `delete_group` | Delete a user group |
+| `initialize_cluster` | Initialize clustering on the primary node |
+| `resync_cluster` | Trigger cluster configuration resync |
+| `set_profile_details` | Update the authenticated user's profile |
+| `create_user_api_token` | Create a new API token for the current user |
 
 ## Security
 
@@ -186,7 +210,7 @@ All tool calls are logged as JSONL to stderr with timestamps, tool name, sanitiz
 
 ## Not Yet Implemented
 
-The Technitium API has ~173 endpoints. This MCP server covers the most useful 36. The following categories are available in the API but not yet exposed:
+The Technitium API has ~173 endpoints. This MCP server covers the most useful 58. The following categories are available in the API but not yet exposed:
 
 - **DHCP management** — scopes, leases, reservations (~12 endpoints)
 - **User & group administration** — create/delete users, manage groups, permissions (~15 endpoints)

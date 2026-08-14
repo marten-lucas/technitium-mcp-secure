@@ -22,7 +22,7 @@ export class TechnitiumClient {
     }
 
     if (!this.config.password) {
-      throw new Error("No token or password configured");
+      throw new Error("Technitium DNS Server authentication required. Set TECHNITIUM_TOKEN or TECHNITIUM_PASSWORD in environment.");
     }
 
     const body = new URLSearchParams({
@@ -30,20 +30,26 @@ export class TechnitiumClient {
       pass: this.config.password,
     });
 
-    const resp = await fetch(`${this.config.url}/api/user/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: body.toString(),
-    });
-    const data = (await resp.json()) as TechnitiumResponse;
+    try {
+      const resp = await fetch(`${this.config.url}/api/user/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: body.toString(),
+      });
+      const data = (await resp.json()) as TechnitiumResponse;
 
-    if (data.status !== "ok" || !data.response) {
-      audit.logAuth("login", false, data.errorMessage);
-      throw new Error("Authentication failed");
+      if (data.status !== "ok" || !data.response) {
+        audit.logAuth("login", false, data.errorMessage);
+        throw new Error(data.errorMessage || "Authentication failed");
+      }
+
+      this.sessionToken = data.response.token as string;
+      audit.logAuth("login", true);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      audit.logAuth("login", false, msg);
+      throw new Error(`Failed to connect to Technitium DNS Server at ${this.config.url}: ${msg}`);
     }
-
-    this.sessionToken = data.response.token as string;
-    audit.logAuth("login", true);
   }
 
   private async ensureAuth(): Promise<void> {
@@ -85,16 +91,24 @@ export class TechnitiumClient {
   ): Promise<TechnitiumResponse> {
     const body = new URLSearchParams({
       ...params,
-      token: this.sessionToken!,
+      token: this.sessionToken || "",
     });
 
-    const resp = await fetch(`${this.config.url}${endpoint}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: body.toString(),
-    });
+    try {
+      const resp = await fetch(`${this.config.url}${endpoint}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: body.toString(),
+      });
 
-    return (await resp.json()) as TechnitiumResponse;
+      return (await resp.json()) as TechnitiumResponse;
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      return {
+        status: "error",
+        errorMessage: `Network error connecting to ${this.config.url}${endpoint}: ${msg}`,
+      };
+    }
   }
 
   async callOrThrow(

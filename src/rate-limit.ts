@@ -26,6 +26,8 @@ export class RateLimiter {
       "dns_delete_zone", "dns_delete_record", "dns_flush_cache",
       "dns_flush_allowed", "dns_flush_blocked", "dns_uninstall_app",
       "dns_update_blocklists", "dns_temp_disable_blocking",
+      "delete_admin_session", "delete_user", "delete_group",
+      "initialize_cluster", "resync_cluster",
     ]) {
       this.toolLimits.set(tool, destructiveLimits);
     }
@@ -35,6 +37,8 @@ export class RateLimiter {
       "dns_remove_allowed", "dns_remove_blocked", "dns_delete_cached",
       "dns_enable_zone", "dns_disable_zone", "dns_set_zone_options",
       "dns_set_settings", "dns_install_app",
+      "create_admin_api_token", "create_user", "create_group",
+      "set_profile_details", "create_user_api_token",
     ]) {
       this.toolLimits.set(tool, mutateLimits);
     }
