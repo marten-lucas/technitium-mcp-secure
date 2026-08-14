@@ -1,0 +1,12 @@
+{
+  "name": "technitium-mcp-secure-full",
+  "version": "1.2.4",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "technitium-mcp-full": "bin/technitium-mcp-full.mjs"
+  },
+  "scripts": {
+    "start": "node bin/technitium-mcp-full.mjs"
+  }
+}

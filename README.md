@@ -19,6 +19,12 @@ Built for use with [Claude Code](https://docs.anthropic.com/en/docs/claude-code)
 - **Auth mutex** to prevent concurrent authentication races
 - **POST-only API calls** for all mutating operations; zone export uses GET (required by Technitium API) with short-lived session tokens
 
+## Monorepo Layout
+
+- `packages/diagnostic`: dedicated diagnostic (read-only) variant wrapper
+- `packages/full`: dedicated full-management variant wrapper
+- root `src/`: shared secure MCP runtime used by both variants
+
 ## Quick Start
 
 ```bash
@@ -28,11 +34,15 @@ cd technitium-mcp-secure
 npm install
 npm run build
 
+# Run dedicated variants
+npm run variant:diagnostic
+npm run variant:full
+
 # Register with Claude Code (see "Generating an API Token" below first)
 claude mcp add technitium-dns \
   --env TECHNITIUM_URL=https://your-server-ip:5380 \
   --env TECHNITIUM_TOKEN=your-api-token \
-  -- node /path/to/technitium-mcp-secure/dist/index.js
+  -- node /path/to/technitium-mcp-secure/packages/full/bin/technitium-mcp-full.mjs
 ```
 
 ## Configuration
@@ -173,7 +183,7 @@ claude mcp add technitium-dns \
   --env TECHNITIUM_URL=http://your-server-ip:5380 \
   --env TECHNITIUM_TOKEN=your-token \
   --env TECHNITIUM_ALLOW_HTTP=true \
-  -- node /path/to/technitium-mcp-secure/dist/index.js
+  -- node /path/to/technitium-mcp-secure/packages/full/bin/technitium-mcp-full.mjs
 ```
 
 A warning will be logged to stderr reminding you that credentials are sent in plaintext.
@@ -188,7 +198,7 @@ claude mcp add technitium-dns-readonly \
   --env TECHNITIUM_TOKEN=your-token \
   --env TECHNITIUM_READONLY=true \
   --env TECHNITIUM_ALLOW_HTTP=true \
-  -- node /path/to/dist/index.js
+  -- node /path/to/technitium-mcp-secure/packages/diagnostic/bin/technitium-mcp-diagnostic.mjs
 ```
 
 ### Rate Limits
