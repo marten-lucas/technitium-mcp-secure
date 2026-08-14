@@ -58,40 +58,8 @@ export function dashboardTools(client: TechnitiumClient): ToolEntry[] {
       },
       readonly: true,
       handler: async () => {
-        const [settings, stats] = await Promise.all([
-          client.callOrThrow("/api/settings/get"),
-          client.callOrThrow("/api/dashboard/stats/get", {
-            type: "LastHour",
-          }),
-        ]);
-
-        const s = stats.stats as Record<string, number>;
-        const totalQueries = s.totalQueries || 0;
-        const failures = s.totalServerFailure || 0;
-        const failureRate =
-          totalQueries > 0
-            ? ((failures / totalQueries) * 100).toFixed(1)
-            : "0.0";
-
-        return JSON.stringify(
-          {
-            version: settings.version,
-            uptimestamp: settings.uptimestamp,
-            dnsServerDomain: settings.dnsServerDomain,
-            forwarders: settings.forwarders,
-            forwarderProtocol: settings.forwarderProtocol,
-            enableBlocking: settings.enableBlocking,
-            lastHour: {
-              totalQueries,
-              serverFailures: failures,
-              failureRate: `${failureRate}%`,
-              blocked: s.totalBlocked || 0,
-              cached: s.totalCached || 0,
-            },
-          },
-          null,
-          2
-        );
+        const data = await client.callOrThrow("/api/dnsClient/healthCheck");
+        return JSON.stringify(data, null, 2);
       },
     },
     {

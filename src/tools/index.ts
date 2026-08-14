@@ -10,7 +10,6 @@ import { settingsTools } from "./settings.js";
 import { logTools } from "./logs.js";
 import { appTools } from "./apps.js";
 import { dnssecTools } from "./dnssec.js";
-import { adminTools } from "./admin.js";
 import { userTools } from "./user.js";
 
 export function getAllTools(client: TechnitiumClient): ToolEntry[] {
@@ -25,7 +24,6 @@ export function getAllTools(client: TechnitiumClient): ToolEntry[] {
     ...logTools(client),
     ...appTools(client),
     ...dnssecTools(client),
-    ...adminTools(client),
     ...userTools(client),
   ];
 }

@@ -6,7 +6,7 @@ Built for use with [Claude Code](https://docs.anthropic.com/en/docs/claude-code)
 
 ## Features
 
-- **58 tools** covering DNS zones, records, blocking, cache, settings, apps, DNSSEC, logs, diagnostics, and admin/user management
+- **52 tools** covering DNS zones, records, blocking, cache, settings, apps, DNSSEC, logs, diagnostics, and user management
 - **Input validation** on all parameters (RFC 1035 domain checks, IP validation, enum allowlists)
 - **HTTPS enforcement** with explicit HTTP opt-in for local networks
 - **Read-only mode** to expose only safe query tools
@@ -45,6 +45,7 @@ All configuration is via environment variables:
 | `TECHNITIUM_TOKEN` | One of token/password | API token (preferred) |
 | `TECHNITIUM_TOKEN_FILE` | One of token/password | Path to file containing token (must be mode 0600) |
 | `TECHNITIUM_PASSWORD` | One of token/password | Admin password (token is preferred) |
+| `TECHNITIUM_TOTP` | No | TOTP code for 2FA-enabled logins |
 | `TECHNITIUM_USER` | No | Username (default: `admin`) |
 | `TECHNITIUM_READONLY` | No | Set `true` to hide all write tools |
 | `TECHNITIUM_ALLOW_HTTP` | No | Set `true` to allow insecure HTTP connections |
@@ -60,7 +61,7 @@ CLI mode flags are also supported:
 
 ## Tools
 
-### Read-only (27 tools)
+### Read-only (22 tools)
 
 | Tool | Description |
 |------|-------------|
@@ -82,17 +83,12 @@ CLI mode flags are also supported:
 | `dns_get_app_config` | Get configuration for an installed app |
 | `dns_dnssec_info` | DNSSEC properties for a zone |
 | `dns_get_ds` | DS records for a DNSSEC-signed zone |
-| `list_admin_sessions` | List active sessions and API tokens |
-| `list_users` | List registered users |
-| `get_user_details` | Get a user's profile details and permissions |
-| `list_groups` | List user groups |
-| `get_cluster_state` | Get cluster status and secondary node info |
 | `get_user_status` | Current user status and server version |
 | `get_session_info` | Current active session details |
 | `get_profile_details` | Authenticated user profile details |
 | `check_for_update` | Check if a new Technitium version is available |
 
-### Write (31 tools)
+### Write (28 tools)
 
 | Tool | Description |
 |------|-------------|
@@ -113,20 +109,17 @@ CLI mode flags are also supported:
 | `dns_flush_cache` | Flush DNS cache (requires `confirm: true`) |
 | `dns_delete_cached` | Delete a specific domain from cache |
 | `dns_set_settings` | Update server settings (forwarders, blocking, etc.) |
-| `dns_update_blocklists` | Force immediate block list update |
-| `dns_temp_disable_blocking` | Temporarily disable blocking (auto re-enables) |
 | `dns_install_app` | Install a DNS app from the app store |
 | `dns_uninstall_app` | Uninstall an app (requires `confirm: true`) |
-| `create_admin_api_token` | Create a persistent API token for a user |
-| `delete_admin_session` | Delete/terminate a user session or token |
-| `create_user` | Create a new user account |
-| `delete_user` | Delete a user account |
-| `create_group` | Create a new user group |
-| `delete_group` | Delete a user group |
-| `initialize_cluster` | Initialize clustering on the primary node |
-| `resync_cluster` | Trigger cluster configuration resync |
 | `set_profile_details` | Update the authenticated user's profile |
 | `create_user_api_token` | Create a new API token for the current user |
+| `create_single_use_user_token` | Create a single-use API token |
+| `logout_user_session` | Logout the current session or token |
+| `delete_user_session` | Delete a session by partial token |
+| `change_password` | Change the current user's password |
+| `initialize_2fa` | Initialize 2FA for the current user |
+| `enable_2fa` | Enable 2FA for the current user |
+| `disable_2fa` | Disable 2FA for the current user |
 
 ## Security
 
@@ -210,22 +203,21 @@ All tool calls are logged as JSONL to stderr with timestamps, tool name, sanitiz
 
 ## Not Yet Implemented
 
-The Technitium API has ~173 endpoints. This MCP server covers the most useful 58. The following categories are available in the API but not yet exposed:
+The Technitium API has ~173 endpoints. This MCP server covers the most useful 50. The following categories are available in the API but not yet exposed:
 
-- **DHCP management** — scopes, leases, reservations (~12 endpoints)
-- **User & group administration** — create/delete users, manage groups, permissions (~15 endpoints)
-- **Cluster management** — multi-server clustering, health, failover (~15 endpoints)
 - **Zone import/clone/convert** — import from file, clone from another server, convert zone types
+- **Zone permissions** — zone ACL and permissions management
 - **DNSSEC signing & key management** — sign/unsign zones, rotate keys, algorithm config
-- **Allowed/blocked zone import/export** — bulk import/export from files
 - **Settings backup/restore** — full server config backup and restore
+- **Dashboard metrics** — raw metrics endpoints and delete-all stats
 - **Log management** — log file deletion, log settings changes
+- **Allowed/blocked zone import/export** — bulk import/export from files
 
 If you need any of these, contributions are welcome or open an issue.
 
 ## Compatibility
 
-Tested against **Technitium DNS Server v14.3** on Alpine Linux. All 36 API endpoints verified against the live v14 API.
+Tested against **Technitium DNS Server v14.3** on Alpine Linux. The currently exposed API paths were verified against the live v14 API.
 
 **Note:** Technitium's API paths changed between versions. If you see 404 errors, check that your server version is v14+. Earlier versions used different paths (e.g. `/api/allowedZones/list` instead of `/api/allowed/list`).
 

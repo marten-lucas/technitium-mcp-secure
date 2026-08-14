@@ -7,6 +7,7 @@ export interface Config {
   user: string;
   token?: string;
   password?: string;
+  totp?: string;
   mode: McpMode;
   readonly: boolean;
   allowHttp: boolean;
@@ -84,6 +85,7 @@ export function loadConfig(): Config {
   }
 
   const password = process.env.TECHNITIUM_PASSWORD;
+  const totp = process.env.TECHNITIUM_TOTP;
   const user = process.env.TECHNITIUM_USER || "admin";
   const readonly = mode === "analyse";
 
@@ -97,6 +99,7 @@ export function loadConfig(): Config {
   delete process.env.TECHNITIUM_TOKEN;
   delete process.env.TECHNITIUM_TOKEN_FILE;
   delete process.env.TECHNITIUM_PASSWORD;
+  delete process.env.TECHNITIUM_TOTP;
 
-  return { url: cleanUrl, user, token, password, mode, readonly, allowHttp };
+  return { url: cleanUrl, user, token, password, totp, mode, readonly, allowHttp };
 }

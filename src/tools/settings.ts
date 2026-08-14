@@ -15,7 +15,7 @@ export function settingsTools(client: TechnitiumClient): ToolEntry[] {
       },
       readonly: true,
       handler: async () => {
-        const data = await client.callOrThrow("/api/settings/get");
+        const data = await client.callOrThrow("/api/getDnsSettings");
         return JSON.stringify(data, null, 2);
       },
     },
@@ -92,68 +92,9 @@ export function settingsTools(client: TechnitiumClient): ToolEntry[] {
             2
           );
         }
-        const data = await client.callOrThrow("/api/settings/set", params);
+        const data = await client.callOrThrow("/api/setDnsSettings", params);
         return JSON.stringify(
           { success: true, message: "Settings updated", ...data },
-          null,
-          2
-        );
-      },
-    },
-    {
-      definition: {
-        name: "dns_update_blocklists",
-        description:
-          "Force an immediate update of all configured block lists. Normally block lists update every 24 hours.",
-        inputSchema: {
-          type: "object",
-          properties: {},
-        },
-      },
-      readonly: false,
-      handler: async () => {
-        const data = await client.callOrThrow(
-          "/api/settings/forceUpdateBlockLists"
-        );
-        return JSON.stringify(
-          { success: true, message: "Block list update triggered", ...data },
-          null,
-          2
-        );
-      },
-    },
-    {
-      definition: {
-        name: "dns_temp_disable_blocking",
-        description:
-          "Temporarily disable domain blocking for a specified number of minutes. Blocking re-enables automatically after the timer expires.",
-        inputSchema: {
-          type: "object",
-          properties: {
-            minutes: {
-              type: "number",
-              description:
-                "Number of minutes to disable blocking (default: 5)",
-            },
-          },
-        },
-      },
-      readonly: false,
-      handler: async (args) => {
-        const minutes =
-          typeof args.minutes === "number" && args.minutes > 0
-            ? Math.min(args.minutes, 60)
-            : 5;
-        const data = await client.callOrThrow(
-          "/api/settings/temporaryDisableBlocking",
-          { minutes: String(minutes) }
-        );
-        return JSON.stringify(
-          {
-            success: true,
-            message: `Blocking disabled for ${minutes} minutes`,
-            ...data,
-          },
           null,
           2
         );

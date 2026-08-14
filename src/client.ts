@@ -29,6 +29,9 @@ export class TechnitiumClient {
       user: this.config.user,
       pass: this.config.password,
     });
+    if (this.config.totp) {
+      body.set("totp", this.config.totp);
+    }
 
     try {
       const resp = await fetch(`${this.config.url}/api/user/login`, {
@@ -38,6 +41,9 @@ export class TechnitiumClient {
       });
       const data = (await resp.json()) as TechnitiumResponse;
 
+      if (data.status === "2fa-required") {
+        throw new Error("Two-factor authentication required. Set TECHNITIUM_TOTP.");
+      }
       if (data.status !== "ok" || !data.response) {
         audit.logAuth("login", false, data.errorMessage);
         throw new Error(data.errorMessage || "Authentication failed");
@@ -89,15 +95,19 @@ export class TechnitiumClient {
     endpoint: string,
     params: Record<string, string>
   ): Promise<TechnitiumResponse> {
+    const token = this.sessionToken || "";
     const body = new URLSearchParams({
       ...params,
-      token: this.sessionToken || "",
+      token,
     });
 
     try {
       const resp = await fetch(`${this.config.url}${endpoint}`, {
         method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          Authorization: `Bearer ${token}`,
+        },
         body: body.toString(),
       });
 
@@ -131,15 +141,19 @@ export class TechnitiumClient {
     params: Record<string, string> = {}
   ): Promise<string> {
     await this.ensureAuth();
+    const token = this.sessionToken!;
 
     const body = new URLSearchParams({
       ...params,
-      token: this.sessionToken!,
+      token,
     });
 
     const resp = await fetch(`${this.config.url}${endpoint}`, {
       method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        Authorization: `Bearer ${token}`,
+      },
       body: body.toString(),
     });
 
@@ -158,7 +172,10 @@ export class TechnitiumClient {
         });
         const retryResp = await fetch(`${this.config.url}${endpoint}`, {
           method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+            Authorization: `Bearer ${this.sessionToken!}`,
+          },
           body: retryBody.toString(),
         });
         return retryResp.text();
@@ -182,14 +199,18 @@ export class TechnitiumClient {
     params: Record<string, string> = {}
   ): Promise<string> {
     await this.ensureAuth();
+    const token = this.sessionToken!;
 
     const qs = new URLSearchParams({
       ...params,
-      token: this.sessionToken!,
+      token,
     });
 
     const resp = await fetch(`${this.config.url}${endpoint}?${qs.toString()}`, {
       method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     });
 
     const text = await resp.text();
@@ -206,7 +227,10 @@ export class TechnitiumClient {
         });
         const retryResp = await fetch(
           `${this.config.url}${endpoint}?${retryQs.toString()}`,
-          { method: "GET" }
+          {
+            method: "GET",
+            headers: { Authorization: `Bearer ${this.sessionToken!}` },
+          }
         );
         return retryResp.text();
       }

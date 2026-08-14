@@ -1,5 +1,5 @@
 export interface TechnitiumResponse {
-  status: "ok" | "error" | "invalid-token";
+  status: "ok" | "error" | "invalid-token" | "2fa-required";
   response?: Record<string, unknown>;
   errorMessage?: string;
   stackTrace?: string;
