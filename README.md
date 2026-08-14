@@ -29,7 +29,7 @@ Built for use with [Claude Code](https://docs.anthropic.com/en/docs/claude-code)
 
 ```bash
 # Clone and build
-git clone https://github.com/rosschurchill/technitium-mcp-secure.git
+git clone https://github.com/marten-lucas/technitium-mcp-secure.git
 cd technitium-mcp-secure
 npm install
 npm run build
@@ -211,19 +211,17 @@ claude mcp add technitium-dns-readonly \
 
 All tool calls are logged as JSONL to stderr with timestamps, tool name, sanitized arguments, result status, and duration. Sensitive values (tokens, passwords) are redacted before logging.
 
-## Not Yet Implemented
+## Scope and Intent
 
-The Technitium API has ~173 endpoints. This MCP server covers the most useful 50. The following categories are available in the API but not yet exposed:
+This secure MCP server focuses on the API surfaces that are most relevant to safe, operational DNS administration in an MCP environment:
 
-- **Zone import/clone/convert** — import from file, clone from another server, convert zone types
-- **Zone permissions** — zone ACL and permissions management
-- **DNSSEC signing & key management** — sign/unsign zones, rotate keys, algorithm config
-- **Settings backup/restore** — full server config backup and restore
-- **Dashboard metrics** — raw metrics endpoints and delete-all stats
-- **Log management** — log file deletion, log settings changes
-- **Allowed/blocked zone import/export** — bulk import/export from files
+- DNS zones, records, and zone-level configuration
+- Blocking, allowlisting, cache management, and diagnostics
+- DNSSEC and app-management flows supported by the official v14 API
+- User/session/profile management and 2FA flows
+- Settings and diagnostics needed for day-to-day server operations
 
-If you need any of these, contributions are welcome or open an issue.
+The project intentionally does not expose every legacy or niche admin endpoint. Instead, it keeps the tool surface aligned with the supported Technitium API and the needs of a secure MCP runtime.
 
 ## Compatibility
 
