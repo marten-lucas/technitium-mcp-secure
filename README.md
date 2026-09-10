@@ -45,6 +45,51 @@ claude mcp add technitium-dns \
   -- node /path/to/technitium-mcp-secure/packages/full/bin/technitium-mcp-full.mjs
 ```
 
+## Docker / SSE deployment
+
+A prebuilt image is published to `ghcr.io/marten-lucas/technitium-mcp-secure`.
+It runs the MCP server over **SSE** (HTTP) so remote agents (e.g. Hermes) can
+connect without a local stdio process.
+
+The image contains a small `server.mjs` bridge that spawns the correct variant
+bin (stdio) and exposes it via `SSEServerTransport` on port `8000`:
+
+- `GET /sse` — the SSE endpoint (MCP client connects here)
+- `POST /message` — the message channel for the SSE session
+
+### Environment variables
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `MCP_VARIANT` | Yes | `diagnostic` (read-only) or `full` |
+| `TECHNITIUM_URL` | Yes | Server URL (e.g. `https://192.168.1.100:5380`) |
+| `TECHNITIUM_TOKEN` | One of token/password | API token (preferred) |
+| `MCP_PORT` | No | Listen port (default `8000`) |
+
+Plus the same connection variables listed under
+[Configuration](#configuration) below (`TECHNITIUM_ALLOW_HTTP`, etc.).
+
+### Example
+
+```bash
+docker run -p 8000:8000 \
+  -e MCP_VARIANT=diagnostic \
+  -e TECHNITIUM_URL=https://dns.example.com \
+  -e TECHNITIUM_TOKEN=your-api-token \
+  ghcr.io/marten-lucas/technitium-mcp-secure:latest
+```
+
+```yaml
+# Coolify / Docker Compose
+services:
+  technitium-diag-mcp:
+    image: ghcr.io/marten-lucas/technitium-mcp-secure:latest
+    environment:
+      - MCP_VARIANT=diagnostic
+      - TECHNITIUM_URL=${TECHNITIUM_URL}
+      - TECHNITIUM_TOKEN=${TECHNITIUM_TOKEN}
+```
+
 ## Configuration
 
 All configuration is via environment variables:
